@@ -73,6 +73,125 @@
     </div>
 }
 
+
+@{
+    var banks = ViewBag.Banks as List<ASP.NET_MVC_HW1.Models.客戶銀行資訊>;
+}
+
+@using (Html.BeginForm("BatchUpdateBank", "Client"))
+{
+    @Html.AntiForgeryToken()
+
+<div>
+    <hr />
+    <h4>客戶銀行資訊</h4>
+    <table class="table">
+        <tr>
+            <th>
+                銀行名稱
+            </th>
+            <th>
+                銀行代碼
+            </th>
+            <th>
+                分行代碼
+            </th>
+            <th>
+                帳戶名稱
+            </th>
+            <th>
+                帳戶號碼
+            </th>
+        </tr>
+        
+        @for (int i = 0; i < banks.Count; i++)
+        {
+            @Html.HiddenFor(modelItem => banks[i].Id)
+            <tr>
+                <td>
+                    @Html.EditorFor(modelItem => banks[i].銀行名稱)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => banks[i].銀行代碼)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => banks[i].分行代碼)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => banks[i].帳戶名稱)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => banks[i].帳戶號碼)
+                </td>
+            </tr>
+        }
+
+    </table>
+    <input type="hidden" name="clientId" value="@(Model.Id)" />
+    <input type="submit" value="批次更新" />
+</div>
+}
+
+
+@{
+    var contacts = ViewBag.Contacts as List<ASP.NET_MVC_HW1.Models.客戶聯絡人>;
+}
+
+@using (Html.BeginForm("BatchUpdateContact", "Client"))
+{
+    @Html.AntiForgeryToken()
+
+<div>
+    <hr />
+    <h4>客戶聯絡人</h4>
+    <table class="table">
+        <tr>
+            <th>
+                職稱
+            </th>
+            <th>
+                姓名
+            </th>
+            <th>
+                Email
+            </th>
+            <th>
+                手機
+            </th>
+            <th>
+                電話
+            </th>
+        </tr>
+
+        @for (int i = 0; i < contacts.Count; i++)
+        {
+            @Html.HiddenFor(modelItem => contacts[i].Id)
+            <tr>
+                <td>
+                    @Html.EditorFor(modelItem => contacts[i].職稱)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => contacts[i].姓名)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => contacts[i].Email)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => contacts[i].手機)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => contacts[i].電話)
+                </td>
+            </tr>
+        }
+
+    </table>
+    <input type="hidden" name="clientId" value="@(Model.Id)" />
+    <input type="submit" value="批次更新" />
+</div>
+}
+
+<hr />
 <div>
     @Html.ActionLink("Back to List", "Index")
 </div>

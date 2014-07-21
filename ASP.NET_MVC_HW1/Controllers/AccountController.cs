@@ -15,7 +15,7 @@ using ASP.NET_MVC_HW1.Models;
 namespace ASP.NET_MVC_HW1.Controllers
 {
     [Authorize]
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
         private ApplicationUserManager _userManager;
 

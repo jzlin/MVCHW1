@@ -20,7 +20,10 @@ namespace ASP.NET_MVC_HW1.Models
         public void Remove(int id)
         {
             客戶聯絡人 客戶聯絡人 = this.FindById(id);
-            客戶聯絡人.是否已刪除 = true;
+            if (客戶聯絡人 != null)
+            {
+                客戶聯絡人.是否已刪除 = true;
+            }
         }
 
 	}

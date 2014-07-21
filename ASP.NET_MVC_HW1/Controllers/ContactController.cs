@@ -7,10 +7,11 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using ASP.NET_MVC_HW1.Models;
+using ASP.NET_MVC_HW1.ActionFilters;
 
 namespace ASP.NET_MVC_HW1.Controllers
 {
-    public class ContactController : Controller
+    public class ContactController : BaseController
     {
         //private 客戶資料Entities db = new 客戶資料Entities();
 
@@ -27,6 +28,7 @@ namespace ASP.NET_MVC_HW1.Controllers
         }
 
         // GET: Contact/Details/5
+        [IdFilters]
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -78,6 +80,7 @@ namespace ASP.NET_MVC_HW1.Controllers
         }
 
         // GET: Contact/Edit/5
+        [IdFilters]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -103,25 +106,38 @@ namespace ASP.NET_MVC_HW1.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,客戶Id,職稱,姓名,Email,手機,電話")] 客戶聯絡人 客戶聯絡人)
+        [IdFilters]
+        public ActionResult Edit(int Id, FormCollection form)
         {
-            if (ModelState.IsValid)
+            客戶聯絡人 客戶聯絡人 = contactRepo.FindById(Id);
+            if (TryUpdateModel<I客戶聯絡人更新>(客戶聯絡人))
             {
-                //db.Entry(客戶聯絡人).State = EntityState.Modified;
-                //db.SaveChanges();
-
-                contactRepo.UnitOfWork.Context.Entry(客戶聯絡人).State = EntityState.Modified;
                 contactRepo.UnitOfWork.Commit();
-
                 return RedirectToAction("Index");
             }
-            //ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
-
             ViewBag.客戶Id = new SelectList(clientRepo.All(), "Id", "客戶名稱", 客戶聯絡人.客戶Id);
             return View(客戶聯絡人);
         }
+        //public ActionResult Edit([Bind(Include = "Id,客戶Id,職稱,姓名,Email,手機,電話")] 客戶聯絡人 客戶聯絡人)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        //db.Entry(客戶聯絡人).State = EntityState.Modified;
+        //        //db.SaveChanges();
+
+        //        contactRepo.UnitOfWork.Context.Entry(客戶聯絡人).State = EntityState.Modified;
+        //        contactRepo.UnitOfWork.Commit();
+
+        //        return RedirectToAction("Index");
+        //    }
+        //    //ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
+
+        //    ViewBag.客戶Id = new SelectList(clientRepo.All(), "Id", "客戶名稱", 客戶聯絡人.客戶Id);
+        //    return View(客戶聯絡人);
+        //}
 
         // GET: Contact/Delete/5
+        [IdFilters]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -142,6 +158,7 @@ namespace ASP.NET_MVC_HW1.Controllers
         // POST: Contact/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [IdFilters]
         public ActionResult DeleteConfirmed(int id)
         {
             //客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);

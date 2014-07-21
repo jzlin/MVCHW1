@@ -7,14 +7,18 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using ASP.NET_MVC_HW1.Models;
+using ASP.NET_MVC_HW1.ActionFilters;
+using AutoMapper;
 
 namespace ASP.NET_MVC_HW1.Controllers
 {
-    public class ClientController : Controller
+    public class ClientController : BaseController
     {
         //private 客戶資料Entities db = new 客戶資料Entities();
 
         private 客戶資料Repository clientRepo = RepositoryHelper.Get客戶資料Repository();
+        private 客戶銀行資訊Repository bankRepo = RepositoryHelper.Get客戶銀行資訊Repository();
+        private 客戶聯絡人Repository contactRepo = RepositoryHelper.Get客戶聯絡人Repository();
 
         // GET: Client
         public ActionResult Index()
@@ -25,6 +29,7 @@ namespace ASP.NET_MVC_HW1.Controllers
         }
 
         // GET: Client/Details/5
+        [IdFilters]
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -39,6 +44,10 @@ namespace ASP.NET_MVC_HW1.Controllers
             {
                 return HttpNotFound();
             }
+
+            ViewBag.Contacts = clientRepo.get客戶聯絡人ById(id.Value).ToList();
+            ViewBag.Banks = clientRepo.get客戶銀行資訊ById(id.Value).ToList();
+
             return View(客戶資料);
         }
 
@@ -70,6 +79,7 @@ namespace ASP.NET_MVC_HW1.Controllers
         }
 
         // GET: Client/Edit/5
+        [IdFilters]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -84,6 +94,10 @@ namespace ASP.NET_MVC_HW1.Controllers
             {
                 return HttpNotFound();
             }
+
+            ViewBag.Contacts = clientRepo.get客戶聯絡人ById(id.Value).ToList();
+            ViewBag.Banks = clientRepo.get客戶銀行資訊ById(id.Value).ToList();
+
             return View(客戶資料);
         }
 
@@ -92,22 +106,34 @@ namespace ASP.NET_MVC_HW1.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email")] 客戶資料 客戶資料)
+        [IdFilters]
+        public ActionResult Edit(int Id, FormCollection form)
         {
-            if (ModelState.IsValid)
+            客戶資料 客戶資料 = clientRepo.FindById(Id);
+            if (TryUpdateModel<I客戶資料更新>(客戶資料))
             {
-                //db.Entry(客戶資料).State = EntityState.Modified;
-                //db.SaveChanges();
-
-                clientRepo.UnitOfWork.Context.Entry(客戶資料).State = EntityState.Modified;
                 clientRepo.UnitOfWork.Commit();
-
                 return RedirectToAction("Index");
             }
             return View(客戶資料);
         }
+        //public ActionResult Edit([Bind(Include = "Id,客戶名稱,統一編號,電話,傳真,地址,Email")] 客戶資料 客戶資料)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        //db.Entry(客戶資料).State = EntityState.Modified;
+        //        //db.SaveChanges();
+
+        //        clientRepo.UnitOfWork.Context.Entry(客戶資料).State = EntityState.Modified;
+        //        clientRepo.UnitOfWork.Commit();
+
+        //        return RedirectToAction("Index");
+        //    }
+        //    return View(客戶資料);
+        //}
 
         // GET: Client/Delete/5
+        [IdFilters]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -128,6 +154,7 @@ namespace ASP.NET_MVC_HW1.Controllers
         // POST: Client/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [IdFilters]
         public ActionResult DeleteConfirmed(int id)
         {
             //客戶資料 客戶資料 = db.客戶資料.Find(id);
@@ -138,6 +165,77 @@ namespace ASP.NET_MVC_HW1.Controllers
             clientRepo.UnitOfWork.Commit();
 
             return RedirectToAction("Index");
+        }
+
+        public ActionResult ExportClientData()
+        {
+            var clients = clientRepo.All();
+            // 匯出客戶資料 "YYYYMMDD_客戶資料匯出.xlsx"
+            return View(clients);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteBank(int clientId, int bankId)
+        {
+            bankRepo.Remove(bankId);
+            bankRepo.UnitOfWork.Commit();
+
+            return RedirectToAction("Details", new { id = clientId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteContact(int clientId, int contactId)
+        {
+            contactRepo.Remove(contactId);
+            contactRepo.UnitOfWork.Commit();
+
+            return RedirectToAction("Details", new { id = clientId });
+        }
+
+        public ActionResult BatchUpdateBank(int clientId, IList<BankBatchUpdateVM> banks)
+        {
+            if (ModelState.IsValid)
+            {
+                foreach (var item in banks)
+                {
+                    var b = bankRepo.FindById(item.Id);
+                    b.銀行名稱 = item.銀行名稱;
+                    b.銀行代碼 = item.銀行代碼;
+                    b.分行代碼 = item.分行代碼;
+                    b.帳戶名稱 = item.帳戶名稱;
+                    b.帳戶號碼 = item.帳戶號碼;
+
+                    //Mapper.DynamicMap<BankBatchUpdateVM, 客戶銀行資訊>(item, b);
+                }
+                bankRepo.UnitOfWork.Commit();
+
+                return RedirectToAction("Edit", new { id = clientId });
+            }
+            return View();
+        }
+
+        public ActionResult BatchUpdateContact(int clientId, IList<ContactBatchUpdateVM> contacts)
+        {
+            if (ModelState.IsValid)
+            {
+                foreach (var item in contacts)
+                {
+                    var c = contactRepo.FindById(item.Id);
+                    c.職稱 = item.職稱;
+                    c.姓名 = item.姓名;
+                    c.Email = item.Email;
+                    c.手機 = item.手機;
+                    c.電話 = item.電話;
+
+                    //Mapper.DynamicMap<ContactBatchUpdateVM, 客戶聯絡人>(item, c);
+                }
+                contactRepo.UnitOfWork.Commit();
+
+                return RedirectToAction("Edit", new { id = clientId });
+            }
+            return View();
         }
 
         protected override void Dispose(bool disposing)

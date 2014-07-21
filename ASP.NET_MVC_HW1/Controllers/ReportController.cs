@@ -7,10 +7,11 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using ASP.NET_MVC_HW1.Models;
+using ASP.NET_MVC_HW1.ActionFilters;
 
 namespace ASP.NET_MVC_HW1.Controllers
 {
-    public class ReportController : Controller
+    public class ReportController : BaseController
     {
         //private 客戶資料Entities db = new 客戶資料Entities();
 
@@ -26,6 +27,7 @@ namespace ASP.NET_MVC_HW1.Controllers
         }
 
         // GET: Report/Details/5
+        [IdFilters]
         public ActionResult Details(int? id)
         {
             if (id == null)
