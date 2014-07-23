@@ -31,6 +31,7 @@ namespace ASP.NET_MVC_HW1.Models
         //string Email { get; set; }
     }
     
+    [Serializable]
     [MetadataType(typeof(客戶資料MetaData))]
     public partial class 客戶資料 : I客戶資料更新
     {

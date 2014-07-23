@@ -9,6 +9,8 @@ using System.Web.Mvc;
 using ASP.NET_MVC_HW1.Models;
 using ASP.NET_MVC_HW1.ActionFilters;
 using AutoMapper;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace ASP.NET_MVC_HW1.Controllers
 {
@@ -169,9 +171,32 @@ namespace ASP.NET_MVC_HW1.Controllers
 
         public ActionResult ExportClientData()
         {
-            var clients = clientRepo.All();
             // 匯出客戶資料 "YYYYMMDD_客戶資料匯出.xlsx"
-            return View(clients);
+
+            byte[] fileContent = GetFileByteArrayFromDB();
+            string docTypeStr = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            string dateStr = DateTime.Now.ToString("yyyyMMdd");
+            string fileName = dateStr + "_客戶資料匯出.xlsx";
+
+            if (Request.Browser.Browser == "IE" && Convert.ToInt32(Request.Browser.MajorVersion) < 9)
+            {
+                // 舊版 IE 使用舊的相容性作法
+                return File(fileContent, docTypeStr, Server.UrlPathEncode(fileName));
+            }
+            else
+            {
+                // 新版瀏覽器使用RFC2231規範的Header Value做法
+                return File(fileContent, docTypeStr, fileName);
+            }
+        }
+
+        private byte[] GetFileByteArrayFromDB()
+        {
+            var clients = clientRepo.All();
+            BinaryFormatter bf = new BinaryFormatter();
+            MemoryStream ms = new MemoryStream();
+            bf.Serialize(ms, clients.ToList());
+            return ms.ToArray();
         }
 
         [HttpPost]
