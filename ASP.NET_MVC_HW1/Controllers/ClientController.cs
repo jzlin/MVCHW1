@@ -11,6 +11,9 @@ using ASP.NET_MVC_HW1.ActionFilters;
 using AutoMapper;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using OfficeOpenXml;
+using System.Drawing;
+using OfficeOpenXml.Style;
 
 namespace ASP.NET_MVC_HW1.Controllers
 {
@@ -192,11 +195,35 @@ namespace ASP.NET_MVC_HW1.Controllers
 
         private byte[] GetFileByteArrayFromDB()
         {
-            var clients = clientRepo.All();
-            BinaryFormatter bf = new BinaryFormatter();
-            MemoryStream ms = new MemoryStream();
-            bf.Serialize(ms, clients.ToList());
-            return ms.ToArray();
+            var clients = clientRepo.All().ToList();
+            //建立Excel
+            using (ExcelPackage p = new ExcelPackage())
+            {
+                ExcelWorksheet sheet = p.Workbook.Worksheets.Add("客戶資料");
+                string[] titles = "客戶名稱;統一編號;電話;傳真;地址;Email".Split(';');
+
+                int colIdx = 1;
+                foreach (var item in titles)
+                {
+                    sheet.Cells[1, colIdx++].Value = item;
+                }
+
+                int rowIdx = 2;
+                foreach (var item in clients)
+                {
+                    sheet.Cells[rowIdx, 1].Value = item.客戶名稱;
+                    sheet.Cells[rowIdx, 2].Value = item.統一編號;
+                    sheet.Cells[rowIdx, 3].Value = item.電話;
+                    sheet.Cells[rowIdx, 4].Value = item.傳真;
+                    sheet.Cells[rowIdx, 5].Value = item.地址;
+                    sheet.Cells[rowIdx, 6].Value = item.Email;
+                    rowIdx++;
+                }
+
+                sheet.Cells.AutoFitColumns();
+
+                return p.GetAsByteArray();
+            }
         }
 
         [HttpPost]
